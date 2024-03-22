@@ -38,7 +38,6 @@ export const POST = async (request: Request) => {
   const payload = await request.json();
   const header = headers();
 
-  console.log(payload)
 
   const heads = {
     "svix-id": header.get("svix-id"),
@@ -58,7 +57,6 @@ export const POST = async (request: Request) => {
       heads as IncomingHttpHeaders & WebhookRequiredHeaders
     ) as Event;
 
-    console.log(evnt)
   } catch (err) {
     return NextResponse.json({ message: "error in verify" }, { status: 400 });
   }
