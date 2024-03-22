@@ -4,10 +4,10 @@
 
 // Resource: https://docs.svix.com/receiving/verifying-payloads/why
 // It's a good practice to verify webhooks. Above article shows why we should do it
-import { Webhook, WebhookRequiredHeaders } from "svix";
-import { headers } from "next/headers";
+import { Webhook } from 'svix'
+import { headers } from 'next/headers'
+import { WebhookEvent } from '@clerk/nextjs/server'
 
-import { IncomingHttpHeaders } from "http";
 
 import { NextResponse } from "next/server";
 import {
@@ -35,52 +35,66 @@ type Event = {
 };
 
 export const POST = async (request: Request) => {
-  const payload = await request.json();
-  const header = headers();
-
-  const heads = {
-    "svix-id": header.get("svix-id"),
-    "svix-timestamp": header.get("svix-timestamp"),
-    "svix-signature": header.get("svix-signature"),
-  };
+    // Get the body
+    const payload = await request.json()
+    const body = JSON.stringify(payload);
+  console.log(payload);
+  const headerPayload = headers();
+  const svix_id = headerPayload.get("svix-id");
+  const svix_timestamp = headerPayload.get("svix-timestamp");
+  const svix_signature = headerPayload.get("svix-signature");
+ 
+    // If there are no headers, error out
+    if (!svix_id || !svix_timestamp || !svix_signature) {
+      return new Response('Error occured -- no svix headers', {
+        status: 400
+      })
+    }
 
   // Activitate Webhook in the Clerk Dashboard.
   // After adding the endpoint, you'll see the secret on the right side.
   const wh = new Webhook(process.env.NEXT_CLERK_WEBHOOK_SECRET || "");
 
-  let evnt: Event | null = null;
-
-  try {
-    evnt = wh.verify(
-      JSON.stringify(payload),
-      heads as IncomingHttpHeaders & WebhookRequiredHeaders
-    ) as Event;
-  } catch (err) {
-    return NextResponse.json({ message: err }, { status: 400 });
+  if (!process.env.NEXT_CLERK_WEBHOOK_SECRET ) {
+    throw new Error('Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local')
   }
 
-  const eventType: EventType = evnt?.type!;
+
+  let evnt: WebhookEvent
+
+  try {
+    evnt = wh.verify(body, {
+      "svix-id": svix_id,
+      "svix-timestamp": svix_timestamp,
+      "svix-signature": svix_signature,
+    }) as WebhookEvent
+  } catch (err) {
+    console.error('Error verifying webhook:', err);
+    return new Response('Error occured', {
+      status: 400
+    })
+  }
+  const eventType = evnt.type;
 
   // Listen organization creation event
   if (eventType === "organization.created") {
     // Resource: https://clerk.com/docs/reference/backend-api/tag/Organizations#operation/CreateOrganization
     // Show what evnt?.data sends from above resource
-    const { id, name, slug, logo_url, image_url, created_by } =
-      evnt?.data ?? {};
+    const { id, name, image_url, created_by } =
+      evnt.data;
 
     try {
       // @ts-ignore
-      await createCommunity(
+      const res = await createCommunity(
         // @ts-ignore
         id,
         name,
-        slug,
-        logo_url || image_url,
+        image_url,
         "org bio",
         created_by
       );
-
-      return NextResponse.json({ message: "User created" }, { status: 201 });
+        console.log(res)
+      return NextResponse.json({ message: "User created" }, { status: 200 });
     } catch (err) {
       console.log(err);
       return NextResponse.json(
