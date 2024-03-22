@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// import { formatDateString } from "@/lib/utils";
-// import DeleteThread from "../forms/DeleteThread";
+import { formatDateString } from "@/lib/utils";
+import DeleteThread from "../forms/DeleteThread";
 
 interface Props {
   id: string;
@@ -38,12 +38,8 @@ function ThreadCard({
   createdAt,
   comments,
   isComment,
-}: Props)
-
-
-{
+}: Props) {
   return (
-
     <article
       className={`flex w-full flex-col rounded-xl ${
         isComment ? "px-0 xs:px-7" : "bg-dark-2 p-7"
@@ -118,13 +114,13 @@ function ThreadCard({
           </div>
         </div>
 
-        {/* <DeleteThread
+        <DeleteThread
           threadId={JSON.stringify(id)}
           currentUserId={currentUserId}
           authorId={author.id}
           parentId={parentId}
           isComment={isComment}
-        /> */}
+        />
       </div>
 
       {!isComment && comments.length > 0 && (
@@ -148,7 +144,7 @@ function ThreadCard({
         </div>
       )}
 
-      {/* {!isComment && community && (
+      {!isComment && community && (
         <Link
           href={`/communities/${community.id}`}
           className='mt-5 flex items-center'
@@ -166,7 +162,7 @@ function ThreadCard({
             className='ml-1 rounded-full object-cover'
           />
         </Link>
-      )} */}
+      )}
     </article>
   );
 }
