@@ -38,6 +38,7 @@ export const POST = async (request: Request) => {
   const payload = await request.json();
   const header = headers();
 
+
   const heads = {
     "svix-id": header.get("svix-id"),
     "svix-timestamp": header.get("svix-timestamp"),
@@ -55,8 +56,9 @@ export const POST = async (request: Request) => {
       JSON.stringify(payload),
       heads as IncomingHttpHeaders & WebhookRequiredHeaders
     ) as Event;
+
   } catch (err) {
-    return NextResponse.json({ message: err }, { status: 400 });
+    return NextResponse.json({ message: "error in verify" }, { status: 400 });
   }
 
   const eventType: EventType = evnt?.type!;
