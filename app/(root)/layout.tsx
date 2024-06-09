@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import NextTopLoader from 'nextjs-toploader';
 
 import "../globals.css";
 import LeftBar from "@/components/shared/LeftBar";
 import BottomBar from "@/components/shared/BottomBar";
 import RightBar from "@/components/shared/RightBar";
 import TopBar from "@/components/shared/TopBar";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +24,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
+  
   return (
     <ClerkProvider
       appearance={{
@@ -30,6 +34,7 @@ export default function RootLayout({
     >
       <html lang='en'>
         <body className={inter.className}>
+          <NextTopLoader color="#29D" height={3} />
           <TopBar />
 
           <main className='flex flex-row'>
